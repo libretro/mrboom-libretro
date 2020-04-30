@@ -73,7 +73,9 @@ SOURCES_C +=   $(LIBRETRO_COMM_DIR)/audio/audio_mixer.c \
 					$(LIBRETRO_COMM_DIR)/formats/wav/rwav.c \
 					$(LIBRETRO_COMM_DIR)/audio/audio_mix.c \
 					$(LIBRETRO_COMM_DIR)/audio/conversion/s16_to_float.c \
-					$(LIBRETRO_COMM_DIR)/audio/conversion/float_to_s16.c
+					$(LIBRETRO_COMM_DIR)/audio/conversion/float_to_s16.c \
+					$(CORE_DIR)/ibxm/ibxm.c
+INCFLAGS += -I$(CORE_DIR)/ibxm
 endif
 endif
 endif
