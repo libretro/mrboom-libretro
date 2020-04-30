@@ -66,15 +66,14 @@ SOURCES_C +=   $(LIBRETRO_COMM_DIR)/audio/audio_mixer.c \
 					$(LIBRETRO_COMM_DIR)/audio/resampler/audio_resampler.c \
 					$(LIBRETRO_COMM_DIR)/file/config_file_userdata.c \
 					$(LIBRETRO_COMM_DIR)/file/config_file.c \
+					$(LIBRETRO_COMM_DIR)/file/file_path_io.c \
 					$(LIBRETRO_COMM_DIR)/features/features_cpu.c \
 					$(LIBRETRO_COMM_DIR)/audio/resampler/drivers/nearest_resampler.c \
 					$(LIBRETRO_COMM_DIR)/audio/resampler/drivers/sinc_resampler.c \
-					$(LIBRETRO_COMM_DIR)/audio/resampler/drivers/null_resampler.c \
 					$(LIBRETRO_COMM_DIR)/formats/wav/rwav.c \
 					$(LIBRETRO_COMM_DIR)/audio/audio_mix.c \
 					$(LIBRETRO_COMM_DIR)/audio/conversion/s16_to_float.c \
-					$(LIBRETRO_COMM_DIR)/audio/conversion/float_to_s16.c \
-					$(LIBRETRO_COMM_DIR)/ibxm/ibxm.c
+					$(LIBRETRO_COMM_DIR)/audio/conversion/float_to_s16.c
 endif
 endif
 endif
