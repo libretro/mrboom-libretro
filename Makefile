@@ -231,12 +231,12 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
    CFLAGS += -mcpu=750 -meabi -mhard-float -D__ppc__
    CFLAGS += -DUSE_FILE32API -DNO_NETWORK
-   CFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
+   CFLAGS += -ffunction-sections -fdata-sections -D__wiiu__ -D__wut__
    STATIC_LINKING=1
 
    # Nintendo WiiU	
    ifneq (,$(findstring wiiu,$(platform)))	
-      CFLAGS += -mwup
+      CFLAGS +=
       
    # Nintendo Wii
    else ifneq (,$(findstring wii,$(platform)))
