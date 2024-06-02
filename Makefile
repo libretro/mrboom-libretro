@@ -3,12 +3,19 @@ AR             := ar
 INSTALL        := install
 RM             := rm
 STRIP          := strip
-GIT_VERSION    := " $(shell git rev-parse --short HEAD)"
 BINDIR         ?= bin
 LIBDIR         ?= lib
 DATADIR        ?= share
 LIBRETRO_DIR   ?= libretro
 WANT_BPP       := 32
+#DEBUG := 1
+
+ifneq ($(SKIP_GIT),1)
+GIT_VERSION := " $(shell git rev-parse --short HEAD)"
+else 
+GIT_VERSION := " "
+endif
+
 
 MANDIR := man/man6
 CFLAGS := $(filter-out -D_FORTIFY_SOURCE=1,$(CFLAGS))
@@ -57,6 +64,7 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
    endif
 else ifneq ($(findstring FreeBSD,$(shell uname -o)),)
    system_platform = freebsd
+   MANDIR = share/man/man6
 else ifneq ($(findstring Haiku,$(shell uname -o)),)
    system_platform = haiku
 else ifneq ($(findstring MINGW,$(shell uname -a)),)
@@ -132,7 +140,6 @@ else ifneq (,$(findstring osx,$(platform)))
 		CXXFLAGS += $(TARGET_RULE)
 		LDFLAGS  += $(TARGET_RULE)
    endif
-   CFLAGS += -DDONT_WANT_ARM_OPTIMIZATIONS
    CFLAGS  += $(ARCHFLAGS)
    CXXFLAGS  += $(ARCHFLAGS)
    LDFLAGS += $(ARCHFLAGS)
@@ -159,7 +166,7 @@ else ifneq (,$(findstring ios,$(platform)))
    else
       MINVERSION = -miphoneos-version-min=5.0
    endif
-   CFLAGS += $(MINVERSION) -DIOS -DDONT_WANT_ARM_OPTIMIZATIONS
+   CFLAGS += $(MINVERSION) -DIOS
 
 # tvOS
 else ifeq ($(platform), tvos-arm64)
@@ -167,7 +174,6 @@ else ifeq ($(platform), tvos-arm64)
    fpic := -fPIC
    SHARED := -dynamiclib
    DEFINES := -DIOS
-   CFLAGS += -DDONT_WANT_ARM_OPTIMIZATIONS
    ifeq ($(IOSSDK),)
       IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
    endif
@@ -189,6 +195,7 @@ else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_emscripten.bc
    fpic := -fPIC
    SHARED := -shared
+   AR=emar
    STATIC_LINKING := 1
    CFLAGS += -DNO_NETWORK
 
@@ -630,8 +637,6 @@ endif
 
 CFLAGS += -DMRBOOM -DHAVE_IBXM -D_FORTIFY_SOURCE=0 -DPLATFORM=\"$(platform)\" -DGIT_VERSION=\"$(GIT_VERSION)\"
 
-SDL2LIBS :=  -lSDL2  -lSDL2_mixer -lminizip
-
 ifneq ($(FALCON),)
    SDLLIBS := -mshort -L/usr/m68k-atari-mint/sys-root/usr/lib/m68020-60 -lSDL_mixer -lSDL -lSDLmain -lFLAC -lmikmod -lgem -lldg  -lgem -lm -lvorbisfile -lvorbis -logg -lmpg123 
 else
@@ -657,17 +662,17 @@ OBJECTS := $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o) $(SOURCES_ASM:.S=.o)
 
 
 ifneq ($(LIBSDL2),)
-   CFLAGS += -D__LIBSDL2__ -DLOAD_FROM_FILES -Isdl2/xBRZ -I/usr/local/include
+   CFLAGS += -D__LIBSDL2__ -DLOAD_FROM_FILES -Isdl2/xBRZ -I/usr/local/include -I/opt/homebrew/include
+   CFLAGS += $(shell sdl2-config --cflags)
    ifneq ($(MINGW),)
       PATH := /${MINGW}/bin:${PATH}
       CFLAGS += -I/${MINGW}/include
-      CFLAGS += $(shell sdl2-config --cflags)
-      LDFLAGS += -L/${MINGW}/lib -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -lstdc++ -lmingw32 -lSDL2main ${SDL2LIBS} -lmodplug -lbz2 -lz -lstdc++ -lwinpthread 
+      LDFLAGS += -L/${MINGW}/lib -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -lstdc++ -lmingw32 -lSDL2main  -lSDL2  -lSDL2_mixer -lminizip -lmodplug -lbz2 -lz -lstdc++ -lwinpthread 
       LDFLAGS += -Wl,-Bdynamic -lole32 -limm32 -lversion -lOleaut32 -lGdi32 -lWinmm -lSetupapi
       OBJECTS += Assets/mrboom.res
    else
       ifneq ($(LIBSDL2),)
-         LDFLAGS += ${SDL2LIBS}
+         LDFLAGS += $(shell sdl2-config --libs) -lSDL2_mixer -lminizip
       endif
    endif
 else
@@ -741,9 +746,7 @@ endif
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-ifeq ($(platform), emscripten)
-	$(CXX) $(fpic) -r $(SHARED) $(INCLUDES) -o $@ $(OBJECTS) $(LDFLAGS)
-else ifeq ($(STATIC_LINKING), 1)
+ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
 else ifeq ($(platform),genode)
 	$(LD) -o $@ $(OBJECTS) $(LDFLAGS)

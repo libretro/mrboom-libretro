@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 #define GAME_NAME            "Mr.Boom"
-#define GAME_VERSION         "5.2"
+#define GAME_VERSION "5.5"
 #define PATH_MAX_LENGTH      256
 #define WIDTH                320
 #define HEIGHT               200
@@ -51,7 +51,6 @@ void mrboom_deinit(void);
 void mrboom_update_input(int keyid, int playerNumber, int state, bool isIA);
 void mrboom_sound(void);
 bool mrboom_debug_state_failed();
-void mrboom_deal_with_autofire();
 void mrboom_loop();
 bool debugTracesPlayer(int player);
 void mrboom_tick_ai();

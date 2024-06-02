@@ -17,8 +17,6 @@ You can find netplay games by joining the [retroarch discord channel](https://di
 ### Options available:
 
 - Color, Sex or Skynet team modes.
-- No monster mode.
-- Drop bomb button autofire.
 
 ### Packages available:
 
@@ -32,10 +30,16 @@ make clean
 make
 ```
 
+to test locally on OSX:
+```sh
+xattr -w com.apple.provenance true  mrboom_libretro.dylib
+```
+
+
 ### Compiling the SDL2 version:
 - OSX: 
 ```sh
-brew install SDL2 minizip SDL2_mixer
+brew install sdl2 minizip SDL2_mixer
 git submodule update --init
 make clean
 make mrboom LIBSDL2=1

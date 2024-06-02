@@ -312,13 +312,8 @@ void activeCheatMode()
          m.nombre_de_coups[i]++;
       }
    }
-   setNoMonsterMode(true);
 }
 
-void setNoMonsterMode(bool on)
-{
-   m.nomonster = on;
-}
 
 bool bonusPlayerWouldLike(int player, enum Bonus bonus)
 {
@@ -373,23 +368,6 @@ void setTeamMode(int teamMode)
 int teamMode()
 {
    return (m.team3_sauve);
-}
-
-void setAutofire(bool on)
-{
-   if (on)
-   {
-      m.autofire = 1;
-   }
-   else
-   {
-      m.autofire = 0;
-   }
-}
-
-bool autofire()
-{
-   return (m.autofire == 1);
 }
 
 int xPlayer(int player)

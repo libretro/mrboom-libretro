@@ -32,17 +32,15 @@ static retro_input_poll_t    input_poll_cb;
 static retro_input_state_t   input_state_cb;
 
 static bool libretro_supports_bitmasks = false;
-static unsigned aspect_option;
+static unsigned aspect_option = 0xff;
 float libretro_music_volume = 1.0;
 int libretro_sfx_volume = 50;
 
 static int team_mode = 0;
-static int noMonster_mode = 0;
 static int level_select = -1;
 
 // Global core options
 static const struct retro_variable var_mrboom_teammode    = { "mrboom-teammode", "Team mode; Selfie|Color|Sex|Skynet" };
-static const struct retro_variable var_mrboom_nomonster   = { "mrboom-nomonster", "Monsters; ON|OFF" };
 static const struct retro_variable var_mrboom_levelselect = { "mrboom-levelselect", "Level select; Normal|Candy|Penguins|Pink|Jungle|Board|Soccer|Sky|Aliens|Random" };
 static const struct retro_variable var_mrboom_aspect      = { "mrboom-aspect", "Aspect ratio; Native|4:3|16:9" };
 static const struct retro_variable var_mrboom_musicvolume = { "mrboom-musicvolume", "Music volume; 100|0|5|10|15|20|25|30|35|40|45|50|55|60|65|70|75|80|85|90|95" };
@@ -109,24 +107,13 @@ void retro_init(void)
    std::vector <const retro_variable *> vars_systems;
    // Add the Global core options
    vars_systems.push_back(&var_mrboom_teammode);
-   vars_systems.push_back(&var_mrboom_nomonster);
    vars_systems.push_back(&var_mrboom_levelselect);
    vars_systems.push_back(&var_mrboom_aspect);
    vars_systems.push_back(&var_mrboom_musicvolume);
    vars_systems.push_back(&var_mrboom_sfxvolume);
 
-#define NB_VARS_SYSTEMS    6
+#define NB_VARS_SYSTEMS    5
    assert(vars_systems.size() == NB_VARS_SYSTEMS);
-   // Add the System core options
-   int idx_var = 0;
-   struct retro_variable vars[NB_VARS_SYSTEMS + 1];      // + 1 for the empty ending retro_variable
-   for (i = 0; i < NB_VARS_SYSTEMS; i++, idx_var++)
-   {
-      vars[idx_var] = *vars_systems[i];
-      log_cb(RETRO_LOG_INFO, "retro_variable (SYSTEM)    { '%s', '%s' }\n", vars[idx_var].key, vars[idx_var].value);
-   }
-   vars[idx_var] = var_empty;
-   environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void *)vars);
 
    joypad.device    = RETRO_DEVICE_JOYPAD;
    joypad.port_min  = 0;
@@ -259,6 +246,16 @@ void retro_set_environment(retro_environment_t cb)
    environ_cb = cb;
    bool no_content = true;
    cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_content);
+
+   static struct retro_variable variables[] = {
+      var_mrboom_teammode,
+      var_mrboom_levelselect,
+      var_mrboom_aspect,
+      var_mrboom_musicvolume,
+      var_mrboom_sfxvolume,
+      var_empty,
+   };
+   environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, variables);
 }
 
 void retro_set_audio_sample(retro_audio_sample_t cb)
@@ -296,7 +293,6 @@ static void set_game_options(void)
    if (inTheMenu() == true)
    {
       setTeamMode(team_mode);
-      setNoMonsterMode(noMonster_mode);
 
       if (level_select >= 0)
       {
@@ -365,40 +361,49 @@ void update_vga(bpp_t *buf, unsigned stride)
 {
    static bpp_t  matrixPalette[NB_COLORS_PALETTE];
    unsigned      x, y;
+   unsigned      xy = 0;
    int           z    = 0;
+   int           zz    = 0;
    bpp_t *       line = buf;
 
    do
    {
 #ifdef WANT_BPP32
-      matrixPalette[z / 3]  = ((m.vgaPalette[z+0] << 2) | (m.vgaPalette[z+0] >> 4)) << 16;
-      matrixPalette[z / 3] |= ((m.vgaPalette[z+1] << 2) | (m.vgaPalette[z+1] >> 4)) << 8;
-      matrixPalette[z / 3] |= ((m.vgaPalette[z+2] << 2) | (m.vgaPalette[z+2] >> 4)) << 0;
+      matrixPalette[zz]  = ((m.vgaPalette[z+0] << 2) | (m.vgaPalette[z+0] >> 4)) << 16;
+      matrixPalette[zz] |= ((m.vgaPalette[z+1] << 2) | (m.vgaPalette[z+1] >> 4)) << 8;
+      matrixPalette[zz] |= ((m.vgaPalette[z+2] << 2) | (m.vgaPalette[z+2] >> 4)) << 0;
 #elif defined(ABGR1555)
-      matrixPalette[z / 3]  = (m.vgaPalette[z+0] >> 1) << 0;
-      matrixPalette[z / 3] |= (m.vgaPalette[z+1] >> 1) << 5;
-      matrixPalette[z / 3] |= (m.vgaPalette[z+2] >> 1) << 10;
+      matrixPalette[zz]  = (m.vgaPalette[z+0] >> 1) << 0;
+      matrixPalette[zz] |= (m.vgaPalette[z+1] >> 1) << 5;
+      matrixPalette[zz] |= (m.vgaPalette[z+2] >> 1) << 10;
 #else
-      matrixPalette[z / 3]  = (m.vgaPalette[z+0] >> 1) << 11;
-      matrixPalette[z / 3] |= (m.vgaPalette[z+1] >> 0) << 5;
-      matrixPalette[z / 3] |= (m.vgaPalette[z+2] >> 1) << 0;
+      matrixPalette[zz]  = (m.vgaPalette[z+0] >> 1) << 11;
+      matrixPalette[zz] |= (m.vgaPalette[z+1] >> 0) << 5;
+      matrixPalette[zz] |= (m.vgaPalette[z+2] >> 1) << 0;
 #endif
       z += 3;
+      zz++;
    } while (z != NB_COLORS_PALETTE * 3);
-
+   if (m.affiche_pal != 1)
+   {
    for (y = 0; y < HEIGHT; y++, line += stride)
    {
       for (x = 0; x < WIDTH; x++)
-      {
-         if (y < HEIGHT)
-         {
-            if (m.affiche_pal != 1)
-            {
-               m.vgaRam[x + y * WIDTH] = m.buffer[x + y * WIDTH];
-            }
-            line[x] = matrixPalette[m.vgaRam[x + y * WIDTH]];
-         }
+      {           
+            m.vgaRam[xy] = m.buffer[xy];
+            line[x] = matrixPalette[m.buffer[xy]];            
+            xy++;
       }
+   }
+   } else {
+   for (y = 0; y < HEIGHT; y++, line += stride)
+   {
+      for (x = 0; x < WIDTH; x++)
+      {           
+            line[x] = matrixPalette[m.vgaRam[xy]];
+            xy++;
+      }
+   }
    }
 }
 
@@ -457,18 +462,6 @@ static void check_variables(void)
       else
       {
          team_mode = 0;
-      }
-   }
-   var.key = var_mrboom_nomonster.key;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
-   {
-      if (strcmp(var.value, "OFF") == 0)
-      {
-         noMonster_mode = 1;
-      }
-      else
-      {
-         noMonster_mode = 0;
       }
    }
    var.key = var_mrboom_levelselect.key;
@@ -587,7 +580,6 @@ void retro_run(void)
 
    set_game_options();
    update_input();
-   //mrboom_deal_with_autofire();
 
    mrboom_loop();
    render_checkered();

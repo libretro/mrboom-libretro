@@ -486,10 +486,10 @@ typedef union registry16Bits
 #define CLD    m.DF = 0
 #define STD    m.DF = 1
 
-void stackDump();
+void stackDump(void);
 void hexDump(void *addr, int len);
 void asm2C_INT(int a);
-void asm2C_init();
+void asm2C_init(void);
 void asm2C_printOffsets(unsigned int offset);
 
 // directjeu nosetjmp,2
@@ -674,7 +674,7 @@ void log_debug2(const char *fmt, ...);
 #endif
 
 #ifndef __LIBRETRO__
-bool is_little_endian();
+bool is_little_endian(void);
 #endif
 
 #if defined(_MSC_VER)
@@ -1068,7 +1068,7 @@ db isbigendian;
 dd touches_[64];
 db tected[25];
 db tecte[56];
-db dummy299[344];
+db dummy299[348];
 db dummy300[512];
 db message1[6];
 db dummy301[6];
@@ -2658,13 +2658,11 @@ db ordre;
 db dummy1586[4];
 db texte1[1024];
 dw maladie[16];
-db autofire;
 db balance_le_bdrawn;
 db bdraw1;
 db on_les_dans_le_menu;
 db sortie_slave;
 db modeinfo;
-db nomonster;
 db twice;
 db twice2;
 db pic_de_tout_debut;
@@ -3214,7 +3212,7 @@ void *ramCopyPointer;
 } Memory;
 #pragma pack(pop)
 extern Memory m;
-void program();
+void program(void);
 #define sizeOfeax 4
 #define sizeOfebx 4
 #define sizeOfecx 4
@@ -3570,13 +3568,11 @@ void program();
 #define sizeOfordre  1
 #define sizeOftexte1  1
 #define sizeOfmaladie  2
-#define sizeOfautofire  1
 #define sizeOfbalance_le_bdrawn  1
 #define sizeOfbdraw1  1
 #define sizeOfon_les_dans_le_menu  1
 #define sizeOfsortie_slave  1
 #define sizeOfmodeinfo  1
-#define sizeOfnomonster  1
 #define sizeOftwice  1
 #define sizeOftwice2  1
 #define sizeOfpic_de_tout_debut  1
